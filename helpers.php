@@ -1,0 +1,55 @@
+<?php
+
+class Helpers
+{
+	public static function parseArguments()
+	{
+		global $argv;
+		array_shift($argv);
+		$out = array();
+		foreach ($argv as $arg) {
+			if (substr($arg, 0, 2) == '--') {
+				$eqPos = strpos($arg, '=');
+				if ($eqPos === FALSE) {
+					$key = substr($arg, 2);
+					$out[$key] = isset($out[$key]) ? $out[$key] : TRUE;
+				} else {
+					$key = substr($arg, 2, $eqPos - 2);
+					$out[$key] = substr($arg, $eqPos + 1);
+				}
+			} else if (substr($arg, 0, 1) == '-') {
+				if (substr($arg, 2, 1) == '=') {
+					$key = substr($arg, 1, 1);
+					$out[$key] = substr($arg, 3);
+				} else {
+					$chars = str_split(substr($arg, 1));
+					foreach ($chars as $char) {
+						$key = $char;
+						$out[$key] = isset($out[$key]) ? $out[$key] : TRUE;
+					}
+				}
+			} else {
+				$out[] = $arg;
+			}
+		}
+
+		return $out;
+	}
+
+
+	/**
+	 * From autoczech by David Grudl
+	 * @param $s
+	 * @return string
+	 */
+	public static function detect($s)
+	{
+		if (preg_match('#[\x80-\x{1FF}\x{2000}-\x{3FFF}]#u', $s))
+			return 'UTF-8';
+
+		if (preg_match('#[\x7F-\x9F\xBC]#', $s))
+			return 'WINDOWS-1250';
+
+		return 'ISO-8859-2';
+	}
+}
