@@ -5,43 +5,47 @@ require_once __DIR__ . '/helpers.php';
 
 \Tracy\Debugger::enable(\Tracy\Debugger::PRODUCTION, __DIR__ . '/log');
 
-
 class Controller
 {
 
 	public function run($directory)
 	{
 		$directory = realpath($directory);
-		if(!$directory) {
+		if (!$directory) {
 			return;
 		}
 		$finder = \Nette\Utils\Finder::findFiles('*.srt', '*.sub')
-			->exclude("*.en.srt")
-			->exclude("sample*/*")
-			->exclude(".srt.backup*/*")
-			->size("<", 1*1024*1024);
+			->exclude('*.en.srt')
+			->exclude('sample*/*')
+			->exclude('.srt.backup*/*')
+			->size('<', 1 * 1024 * 1024);
 
 		$indexFile = $directory . '/.srtindex';
 		// index file to exclude already processed files
 		$index = file_exists($indexFile) ? file($indexFile) : [];
-		array_walk($index, function(&$item) {
+		array_walk($index, function (&$item) {
 			$item = trim($item, "\n\t\r \\/");
 			$item = str_replace("/", DIRECTORY_SEPARATOR, $item);
 		});
 		$counter = 0;
 
-		$finder->filter(function($file) use (&$index, $directory, &$counter) {
+		$finder->filter(function ($file) use (&$index, $directory, &$counter) {
+			/** @var SplFileInfo $file */
 			//filter entries in index file
-			if(!$file->isFile()) return TRUE;
+			if (!$file->isFile()) {
+				return true;
+			}
 			$filepath = str_replace($directory, '', $file->getRealPath());
 			$filepath = trim($filepath, "\n\t\r \\/");
 
-			if(!in_array($filepath, $index)) {
+			if (!in_array($filepath, $index)) {
 				$index[] = $filepath;
 				$counter++;
-				return TRUE;
+
+				return true;
 			}
-			return FALSE;
+
+			return false;
 		});
 
 		foreach ($finder->from($directory) as $file) {
@@ -50,8 +54,8 @@ class Controller
 		}
 
 		$values = array_values($index);
-		array_walk($values, function(&$item) {
-			$item = str_replace(DIRECTORY_SEPARATOR, "/", $item); //normalization
+		array_walk($values, function (&$item) {
+			$item = str_replace(DIRECTORY_SEPARATOR, '/', $item); //normalization
 		});
 		file_put_contents($indexFile, implode("\n", $values));
 
@@ -66,18 +70,18 @@ class Controller
 
 		switch ($encoding) {
 			case 'WINDOWS-1250':
-				echo 'WIN-1250 - ' . substr($path, -100)."\n";
+				echo 'WIN-1250 - ' . substr($path, -100) . "\n";
 				$this->transcode($file, $encoding, $path);
 				break;
 			case 'ISO-8859-2':
-				echo 'ISO-8859 - ' . substr($path, -100)."\n";
+				echo 'ISO-8859 - ' . substr($path, -100) . "\n";
 				$this->transcode($file, $encoding, $path);
 				break;
 			case 'UTF-8':
-				echo 'UTF-8    - ' . substr($path, -100)."\n";
+				echo 'UTF-8    - ' . substr($path, -100) . "\n";
 				break;
 			default:
-				echo 'UNKNOWN  - ' . substr($path, -100)."\n";
+				echo 'UNKNOWN  - ' . substr($path, -100) . "\n";
 		}
 	}
 
@@ -85,10 +89,10 @@ class Controller
 	{
 		$newS = iconv($encoding, 'UTF-8', $s);
 
-		$bak = dirname($path).'/.srt.backup';
-		@mkdir($bak, 0777, TRUE);
+		$bak = dirname($path) . '/.srt.backup';
+		@mkdir($bak, 0777, true);
 
-		if(!file_exists($bak.'/'.basename($path))) {
+		if (!file_exists($bak . '/' . basename($path))) {
 			file_put_contents($bak . '/' . basename($path), $s);
 		}
 		file_put_contents($path, $newS);
@@ -100,6 +104,6 @@ class Controller
 $args = Helpers::parseArguments();
 
 if (empty($args)) {
-	die("Please provide directory to run in.");
+	die('Please provide directory to run in.');
 }
 (new Controller())->run(array_shift($args));

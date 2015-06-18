@@ -1,6 +1,7 @@
 {
     "require": {
-        "tracy/tracy": "~2.2",
-        "nette/finder": "~2.2"
-    }
+        "tracy/tracy": "~2.3",
+        "nette/finder": "~2.3"
+    },
+    "name": "janlanger/srt-utf8"
 }
