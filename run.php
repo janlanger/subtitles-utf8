@@ -88,15 +88,7 @@ class Controller
 	private function transcode($s, $encoding, $path)
 	{
 		$newS = iconv($encoding, 'UTF-8', $s);
-
-		$bak = dirname($path) . '/.srt.backup';
-		@mkdir($bak, 0777, true);
-
-		if (!file_exists($bak . '/' . basename($path))) {
-			file_put_contents($bak . '/' . basename($path), $s);
-		}
 		file_put_contents($path, $newS);
-
 	}
 
 }
